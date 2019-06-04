@@ -1,0 +1,33 @@
+{
+	"name": "electra-web",
+	"repositories": [
+		{
+			"type": "vcs",
+			"url":  "https://github.com/ieatstickers/electra-utility.git"
+		},
+		{
+			"type": "vcs",
+			"url":  "https://github.com/ieatstickers/electra-core.git"
+		}
+	],
+	"require": {
+		"bramus/router": "^1.4",
+		"electra-utility": "dev-master",
+		"electra-core": "dev-master",
+		"illuminate/http": "^5.8",
+		"illuminate/routing": "^5.8",
+		"ext-json": "*"
+	},
+	"require-dev" : {
+	},
+	"authors": [
+		{
+			"name": "Mike Burke"
+		}
+	],
+	"autoload": {
+		"psr-4": {
+			"Electra\\Dal\\": "src"
+		}
+	}
+}
