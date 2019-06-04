@@ -27,7 +27,7 @@
 	],
 	"autoload": {
 		"psr-4": {
-			"Electra\\Dal\\": "src"
+			"Electra\\Web\\": "src"
 		}
 	}
 }
