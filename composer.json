@@ -12,8 +12,8 @@
 	],
 	"require": {
 		"bramus/router": "^1.4",
-		"electra-utility": "dev-master",
-		"electra-core": "dev-master",
+		"electra/utility": "dev-master",
+		"electra/core": "dev-master",
 		"illuminate/http": "^5.8",
 		"illuminate/routing": "^5.8",
 		"ext-json": "*"
