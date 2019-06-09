@@ -3,11 +3,11 @@
 	"repositories": [
 		{
 			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/utility.git"
+			"url":  "https://github.com/ieatstickers/electra-utility.git"
 		},
 		{
 			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/core.git"
+			"url":  "https://github.com/ieatstickers/electra-core.git"
 		}
 	],
 	"require": {
