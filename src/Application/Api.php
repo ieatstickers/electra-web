@@ -5,20 +5,20 @@ namespace Electra\Web\Application;
 use Electra\Utility\Objects;
 use Electra\Web\Http\Request;
 use Electra\Web\Http\Response;
-use Electra\Web\Task\AbstractWebTask;
+use Electra\Web\Endpoint\AbstractEndpoint;
 
 class Api
 {
-  /** @var AbstractWebTask[] */
-  protected $tasks = [];
+  /** @var AbstractEndpoint[] */
+  protected $endpoints = [];
 
   /**
-   * @param AbstractWebTask $task
+   * @param AbstractEndpoint $endpoint
    * @return $this
    */
-  public function addTask(AbstractWebTask $task)
+  public function addEndpoint(AbstractEndpoint $endpoint)
   {
-    $this->tasks[] = $task;
+    $this->endpoints[] = $endpoint;
 
     return $this;
   }
@@ -28,23 +28,23 @@ class Api
    */
   public function run()
   {
-    foreach ($this->tasks as $task)
+    foreach ($this->endpoints as $endpoint)
     {
-      Router::match($task->getHttpMethods(), $task->getUri(), function() use ($task)
+      Router::match($endpoint->getHttpMethods(), $endpoint->getUri(), function() use ($endpoint)
       {
         // Hydrate payload from request params
-        $payloadClass = $task->getPayloadClass();
+        $payloadClass = $endpoint->getPayloadClass();
         $payload = new $payloadClass();
         $request = Request::capture();
         $requestParams = $request->all();
         $payload = Objects::hydrate($payload, (object)$requestParams);
         // Execute task
-        $taskResponse = $task->execute($payload);
+        $taskResponse = $endpoint->execute($payload);
         // Serialize and send response
         return Response::create(json_encode($taskResponse))->send();
       });
     }
-    
+
     Router::init();
   }
 }

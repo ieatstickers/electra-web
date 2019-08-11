@@ -1,10 +1,10 @@
 <?php
 
-namespace Electra\Web\Task;
+namespace Electra\Web\Endpoint;
 
-use Electra\Core\Task\AbstractTask;
+use Electra\Core\Event\AbstractEvent;
 
-abstract class AbstractWebTask extends AbstractTask
+abstract class AbstractEndpoint extends AbstractEvent
 {
   /**
    * @return array
