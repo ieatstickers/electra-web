@@ -3,21 +3,29 @@
 namespace Electra\Web\Application;
 
 use Electra\Utility\Objects;
+use Electra\Web\Endpoint\EndpointInterface;
 use Electra\Web\Http\Request;
 use Electra\Web\Http\Response;
-use Electra\Web\Endpoint\AbstractEndpoint;
 
 class Api
 {
-  /** @var AbstractEndpoint[] */
+  /** @var EndpointInterface[] */
   protected $endpoints = [];
 
   /**
-   * @param AbstractEndpoint $endpoint
+   * @param EndpointInterface $endpoint
    * @return $this
    */
-  public function addEndpoint(AbstractEndpoint $endpoint)
+  public function addEndpoint($endpoint)
   {
+    // If endpoint is not an
+    if (!($endpoint instanceof EndpointInterface))
+    {
+      $endpointClass = get_class($endpoint);
+      $interfaceClass = EndpointInterface::class;
+      throw new \Exception("Endpoint $endpointClass must implement $interfaceClass");
+    }
+
     $this->endpoints[] = $endpoint;
 
     return $this;
