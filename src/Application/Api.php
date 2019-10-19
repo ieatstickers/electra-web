@@ -2,6 +2,7 @@
 
 namespace Electra\Web\Application;
 
+use Electra\Core\Event\AbstractPayload;
 use Electra\Utility\Objects;
 use Electra\Web\Endpoint\EndpointInterface;
 use Electra\Web\Http\Request;
@@ -41,8 +42,9 @@ class Api
       Router::match($endpoint->getHttpMethods(), $endpoint->getUri(), function() use ($endpoint)
       {
         // Hydrate payload from request params
+        /** @var AbstractPayload $payloadClass */
         $payloadClass = $endpoint->getPayloadClass();
-        $payload = new $payloadClass();
+        $payload = $payloadClass::create();
         $request = Request::capture();
         $requestParams = $request->all();
         $payload = Objects::hydrate($payload, (object)$requestParams);
