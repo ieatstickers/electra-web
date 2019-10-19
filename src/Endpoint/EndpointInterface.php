@@ -19,4 +19,7 @@ interface EndpointInterface extends EventInterface
    * The URI that will be registed in the route
    */
   public function getUri(): string;
+
+  /** @return bool */
+  public function requiresAuth();
 }
