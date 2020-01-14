@@ -4,6 +4,7 @@ namespace Electra\Web\Application;
 
 use Electra\Core\Event\AbstractPayload;
 use Electra\Core\Exception\ElectraException;
+use Electra\Utility\Arrays;
 use Electra\Utility\Objects;
 use Electra\Web\Endpoint\EndpointInterface;
 use Electra\Web\Http\Request;
@@ -62,13 +63,32 @@ class Api
   {
     foreach ($this->endpoints as $endpoint)
     {
-      Router::match($endpoint->getHttpMethods(), $endpoint->getUri(), function() use ($endpoint)
+      Router::match($endpoint->getHttpMethods(), $endpoint->getUri(), function(...$routeParams) use ($endpoint)
       {
         $request = Request::capture();
+        RouteParams::clear();
+
+        if ($routeParams)
+        {
+          $matches = [];
+          preg_match_all('/{[A-z]+}/', $endpoint->getUri(), $matches);
+
+          if ($matches)
+          {
+            $matches = $matches[0];
+          }
+
+          foreach ($matches as $key => $value)
+          {
+            $value = ltrim($value, '{');
+            $value = rtrim($value, '}');
+            RouteParams::add($value, $routeParams[$key]);
+          }
+        }
 
         foreach ($this->middleware as $middleware)
         {
-          $result = $middleware->run($endpoint,$request);
+          $result = $middleware->run($endpoint, $request);
 
           if (!$result)
           {
@@ -81,7 +101,22 @@ class Api
         /** @var AbstractPayload $payloadClass */
         $payloadClass = $endpoint->getPayloadClass();
         $payload = $payloadClass::create();
-        $requestParams = $request->all();
+
+        $requestParams = array_merge(RouteParams::getAll(), $request->all());
+
+        $expectedPropertyTypes = $payload->getPropertyTypes();
+
+        foreach ($requestParams as $key => $requestParam)
+        {
+          if (
+            is_numeric($requestParam)
+            && Arrays::getByKey($key, $expectedPropertyTypes) == 'integer'
+          )
+          {
+            $requestParams[$key] = (int)$requestParam;
+          }
+        }
+
         $payload = Objects::hydrate($payload, (object)$requestParams);
         // Execute task
         $taskResponse = $endpoint->execute($payload);
