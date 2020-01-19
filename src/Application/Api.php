@@ -115,6 +115,14 @@ class Api
           {
             $requestParams[$key] = (int)$requestParam;
           }
+
+          if (
+            is_string($requestParam)
+            && Arrays::getByKey($key, $expectedPropertyTypes) == 'array'
+          )
+          {
+            $requestParams[$key] = json_decode($requestParam, true);
+          }
         }
 
         $payload = Objects::hydrate($payload, (object)$requestParams);
