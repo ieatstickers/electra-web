@@ -115,6 +115,13 @@ class Api
           {
             $requestParams[$key] = (int)$requestParam;
           }
+          if (
+            is_numeric($requestParam)
+            && Arrays::getByKey($key, $expectedPropertyTypes) == 'double'
+          )
+          {
+            $requestParams[$key] = (float)$requestParam;
+          }
 
           if (
             is_string($requestParam)
