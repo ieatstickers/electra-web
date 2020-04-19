@@ -4,6 +4,7 @@ namespace Electra\Web\Application;
 
 use Electra\Core\Event\AbstractPayload;
 use Electra\Core\Exception\ElectraException;
+use Electra\Core\MessageBag\MessageBag;
 use Electra\Utility\Arrays;
 use Electra\Utility\Objects;
 use Electra\Web\Endpoint\EndpointInterface;
@@ -134,9 +135,13 @@ class Api
 
         $payload = Objects::hydrate($payload, (object)$requestParams);
         // Execute task
-        $taskResponse = $endpoint->execute($payload);
+        $eventResponse = $endpoint->execute($payload);
         // Serialize and send response
-        return Response::create(json_encode($taskResponse))->send();
+        $response = [
+          'data' => $eventResponse,
+          'messages' => MessageBag::getAllMessages()
+        ];
+        return Response::create(json_encode($response))->send();
       });
     }
 
