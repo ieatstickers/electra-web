@@ -5,6 +5,7 @@ namespace Electra\Web\Application;
 use Electra\Core\Event\AbstractPayload;
 use Electra\Core\Exception\ElectraException;
 use Electra\Core\MessageBag\MessageBag;
+use Electra\Core\MessageBag\Message;
 use Electra\Utility\Arrays;
 use Electra\Utility\Objects;
 use Electra\Web\Endpoint\EndpointInterface;
@@ -134,8 +135,23 @@ class Api
         }
 
         $payload = Objects::hydrate($payload, (object)$requestParams);
+        $eventResponse = null;
+
         // Execute task
-        $eventResponse = $endpoint->execute($payload);
+        try {
+          $eventResponse = $endpoint->execute($payload);
+        }
+        catch (\Exception $exception)
+        {
+          if ($exception instanceof ElectraException && $exception->getDisplayMessage())
+          {
+            MessageBag::addMessage(Message::error($exception->getDisplayMessage()));
+          }
+          else
+          {
+            MessageBag::addMessage(Message::error($exception->getMessage()));
+          }
+        }
         // Serialize and send response
         $response = [
           'data' => $eventResponse,
