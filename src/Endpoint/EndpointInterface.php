@@ -2,6 +2,7 @@
 
 namespace Electra\Web\Endpoint;
 
+use Electra\Core\Event\AbstractPayload;
 use Electra\Core\Event\EventInterface;
 
 interface EndpointInterface extends EventInterface
@@ -22,4 +23,10 @@ interface EndpointInterface extends EventInterface
 
   /** @return bool */
   public function requiresAuth();
+
+  /**
+   * @param AbstractPayload $payload
+   * @return bool
+   */
+  public function hasAccess($payload): bool;
 }
