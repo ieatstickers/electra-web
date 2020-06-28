@@ -141,13 +141,11 @@ class Api
         try {
           if (!$endpoint->hasAccess($payload))
           {
-            $eventResponse = $endpoint->execute($payload);
-          }
-          else
-          {
             $message = 'Cannot access data - Insufficient permissions';
             throw new ElectraException($message,$message);
           }
+
+          $eventResponse = $endpoint->execute($payload);
         }
         catch (\Exception $exception)
         {
