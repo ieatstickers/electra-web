@@ -19,6 +19,8 @@ class Api
   protected $endpoints = [];
   /** @var MiddlewareInterface[] */
   protected $middleware = [];
+  /** @var callable[] */
+  protected $responseMutators = [];
 
   /**
    * @param EndpointInterface $endpoint
@@ -56,6 +58,26 @@ class Api
     }
 
     $this->middleware[] = $middleware;
+
+    return $this;
+  }
+
+  /**
+   * @param string   $key
+   * @param callable $mutator
+   *
+   * @return $this
+   * @throws ElectraException
+   */
+  public function addResponseMutator(string $key, callable $mutator)
+  {
+    if (isset($this->responseMutators[$key]))
+    {
+      throw (new ElectraException('Cannot add response mutator. Key already exists'))
+        ->addMetaData('key', $key);
+    }
+
+    $this->responseMutators[$key] = $mutator;
 
     return $this;
   }
@@ -159,14 +181,32 @@ class Api
           }
         }
         // Serialize and send response
-        $response = [
-          'data' => $eventResponse,
-          'messages' => MessageBag::getAllMessages()
-        ];
+        $response = $this->generateResponse($eventResponse);
+
         return Response::create(json_encode($response))->send();
       });
     }
 
     Router::init();
+  }
+
+  /**
+   * @param array $endpointResponse
+   *
+   * @return array
+   */
+  private function generateResponse($endpointResponse)
+  {
+    $response = [
+      'data' => $endpointResponse,
+      'messages' => MessageBag::getAllMessages()
+    ];
+
+    foreach ($this->responseMutators as $mutator)
+    {
+      $response = $mutator($response);
+    }
+
+    return $response;
   }
 }
