@@ -38,19 +38,39 @@ class RouteParams
   }
 
   /**
+   * @param string $path
+   * @param mixed  ...$params
+   *
+   * @throws ElectraException
+   */
+  public static function capture(string $path, ...$params)
+  {
+    if ($params)
+    {
+      $matches = [];
+      preg_match_all('/{[A-z]+}/', $path, $matches);
+
+      if ($matches)
+      {
+        $matches = $matches[0];
+      }
+
+      foreach ($matches as $key => $value)
+      {
+        $value = ltrim($value, '{');
+        $value = rtrim($value, '}');
+        RouteParams::add($value, $params[$key]);
+      }
+    }
+  }
+
+  /**
    * @param string $key
    * @return mixed|null
    */
   public static function get(string $key)
   {
     return Arrays::getByKey($key, self::$routeParams);
-  }
-
-  /** @return array */
-  public static function clear(): array
-  {
-    self::$routeParams = [];
-    return self::$routeParams;
   }
 
   /** @return array */

@@ -2,15 +2,14 @@
 
 namespace Electra\Web\Middleware;
 
-use Electra\Web\Endpoint\EndpointInterface;
-use Electra\Web\Http\Request;
+use Electra\Core\Context\ContextAwareInterface;
+use Electra\Core\Event\EventInterface;
 
-interface MiddlewareInterface
+interface MiddlewareInterface extends ContextAwareInterface
 {
   /**
-   * @param EndpointInterface $endpoint
-   * @param Request $request
+   * @param EventInterface $endpoint
    * @return bool
    */
-  public function run(EndpointInterface $endpoint, Request $request): bool;
+  public function run(EventInterface $endpoint): bool;
 }

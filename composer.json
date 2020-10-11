@@ -8,34 +8,13 @@
 		{
 			"type": "vcs",
 			"url":  "https://github.com/ieatstickers/electra-core.git"
-		},
-		{
-			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/electra-jwt.git"
-		},
-		{
-			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/electra-config.git"
-		},
-		{
-			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/electra-dal.git"
-		},
-		{
-			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/electra-migrate.git"
 		}
 	],
 	"require": {
 		"bramus/router": "^1.4",
-		"electra/config": "dev-master",
-		"electra/core": "dev-master",
-		"electra/dal": "dev-master",
-		"electra/jwt": "dev-master",
-		"electra/migrate": "dev-master",
+		"electra/core": "dev-refactor",
 		"electra/utility": "dev-master",
 		"illuminate/http": "^5.8",
-		"illuminate/routing": "^5.8",
 		"ext-json": "*"
 	},
 	"require-dev" : {
