@@ -310,7 +310,7 @@ class Application
     // Hydrate payload from request params
     $payload = DefaultPayload::create();
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
-    $payload = Objects::copyAllProperties($payload, (object)$this->castParams($requestParams, $payload->getPropertyTypes()));
+    $payload = Objects::copyAllProperties((object)$this->castParams($requestParams, $payload->getPropertyTypes()), $payload);
     return $callable($payload);
   }
 
