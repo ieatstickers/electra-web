@@ -311,10 +311,7 @@ class Application
     $payload = null;
     $endpointResponse = null;
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
-
-    $payload = DefaultPayload::create();
-    $expectedPropertyTypes = $payload->getPropertyTypes();
-    $payload = Objects::hydrate($payload, (object)$this->castParams($requestParams, $expectedPropertyTypes));
+    $payload = DefaultPayload::create((object)$this->castParams($requestParams, $payload->getPropertyTypes()));
     return $callable($payload);
   }
 
@@ -350,9 +347,7 @@ class Application
     $endpointResponse = null;
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
 
-    $eventPayload = $payloadClass::create();
-    $expectedPropertyTypes = $eventPayload->getPropertyTypes();
-    $eventPayload = Objects::hydrate($eventPayload, (object)$this->castParams($requestParams, $expectedPropertyTypes));
+    $eventPayload = $payloadClass::create((object)$this->castParams($requestParams, $eventPayload->getPropertyTypes()));
 
     // Execute event
     try {
