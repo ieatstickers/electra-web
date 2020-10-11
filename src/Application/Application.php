@@ -341,11 +341,27 @@ class Application
 
     // Hydrate payload from request params
     /** @var AbstractPayload $payloadClass */
-    $payloadClass = $event->getPayloadClass() ?: DefaultPayload::class;
-    $eventPayload = $payloadClass::create();
-    $endpointResponse = null;
+    $payloadClass = $event->getPayloadClass();
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
-    $eventPayload = Objects::hydrate($eventPayload, (object)$this->castParams($requestParams, $eventPayload->getPropertyTypes()));
+
+    if ($payloadClass)
+    {
+      $eventPayload = $payloadClass::create();
+      $eventPayload = Objects::hydrate(
+        $eventPayload,
+        (object)$this->castParams($requestParams, $eventPayload->getPropertyTypes())
+      );
+    }
+    else
+    {
+      $eventPayload = DefaultPayload::create();
+      $eventPayload = Objects::copyAllProperties(
+        (object)$this->castParams($requestParams, $eventPayload->getPropertyTypes()),
+        $eventPayload
+      );
+    }
+
+    $endpointResponse = null;
 
     // Execute event
     try {
