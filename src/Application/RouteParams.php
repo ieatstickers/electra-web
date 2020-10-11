@@ -7,7 +7,8 @@ use Electra\Utility\Arrays;
 
 class RouteParams
 {
-  protected static $routeParams;
+  /** @var array */
+  protected static $routeParams = [];
 
   /**
    * @param string $key
