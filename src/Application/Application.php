@@ -13,7 +13,7 @@ use Electra\Core\MessageBag\Message;
 use Electra\Utility\Arrays;
 use Electra\Utility\Objects;
 use Electra\Web\Context\WebContextInterface;
-use Electra\Web\Http\Payload;
+use Electra\Web\Http\DefaultPayload;
 use Electra\Web\Http\Response;
 use Electra\Web\Middleware\MiddlewareInterface;
 
@@ -255,6 +255,48 @@ class Application
   }
 
   /**
+   * @param array $params
+   * @param array $expectedTypes
+   *
+   * @return array
+   */
+  private function castParams(array $params, array $expectedTypes)
+  {
+    if (!$expectedTypes)
+    {
+      return $params;
+    }
+
+    foreach ($params as $key => $paramValue)
+    {
+      if (
+        is_numeric($paramValue)
+        && Arrays::getByKey($key, $expectedTypes) == 'integer'
+      )
+      {
+        $params[$key] = (int)$paramValue;
+      }
+      if (
+        is_numeric($paramValue)
+        && Arrays::getByKey($key, $expectedTypes) == 'double'
+      )
+      {
+        $params[$key] = (float)$paramValue;
+      }
+
+      if (
+        is_string($paramValue)
+        && Arrays::getByKey($key, $expectedTypes) == 'array'
+      )
+      {
+        $params[$key] = json_decode($paramValue, true);
+      }
+    }
+
+    return $params;
+  }
+
+  /**
    * @param callable $callable
    *
    * @return mixed
@@ -265,8 +307,14 @@ class Application
     // Run all middleware (will throw an exception if request is rejected)
     $this->runMiddleware($callable);
 
+    // Hydrate payload from request params
+    $payload = null;
+    $endpointResponse = null;
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
-    $payload = Payload::create($requestParams);
+
+    $payload = DefaultPayload::create();
+    $expectedPropertyTypes = $payload->getPropertyTypes();
+    $payload = Objects::hydrate($payload, (object)$this->castParams($requestParams, $expectedPropertyTypes));
     return $callable($payload);
   }
 
@@ -297,22 +345,14 @@ class Application
 
     // Hydrate payload from request params
     /** @var AbstractPayload $payloadClass */
-    $payloadClass = $event->getPayloadClass();
+    $payloadClass = $event->getPayloadClass() ?: DefaultPayload::class;
     $eventPayload = null;
     $endpointResponse = null;
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
 
-    if ($payloadClass)
-    {
-      $eventPayload = $payloadClass::create();
-      $expectedPropertyTypes = $eventPayload->getPropertyTypes();
-      $payload = Payload::create($requestParams, $expectedPropertyTypes);
-      $eventPayload = Objects::hydrate($eventPayload, (object)$payload->getAll());
-    }
-    else
-    {
-      $eventPayload = Payload::create($requestParams);
-    }
+    $eventPayload = $payloadClass::create();
+    $expectedPropertyTypes = $eventPayload->getPropertyTypes();
+    $eventPayload = Objects::hydrate($eventPayload, (object)$this->castParams($requestParams, $expectedPropertyTypes));
 
     // Execute event
     try {
