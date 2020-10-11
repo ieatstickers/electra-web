@@ -308,10 +308,9 @@ class Application
     $this->runMiddleware($callable);
 
     // Hydrate payload from request params
-    $payload = null;
-    $endpointResponse = null;
+    $payload = DefaultPayload::create();
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
-    $payload = DefaultPayload::create((object)$this->castParams($requestParams, $payload->getPropertyTypes()));
+    $payload = Objects::copyAllProperties($payload, (object)$this->castParams($requestParams, $payload->getPropertyTypes()));
     return $callable($payload);
   }
 
@@ -343,11 +342,10 @@ class Application
     // Hydrate payload from request params
     /** @var AbstractPayload $payloadClass */
     $payloadClass = $event->getPayloadClass() ?: DefaultPayload::class;
-    $eventPayload = null;
+    $eventPayload = $payloadClass::create();
     $endpointResponse = null;
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
-
-    $eventPayload = $payloadClass::create((object)$this->castParams($requestParams, $eventPayload->getPropertyTypes()));
+    $eventPayload = Objects::hydrate($eventPayload, (object)$this->castParams($requestParams, $eventPayload->getPropertyTypes()));
 
     // Execute event
     try {
