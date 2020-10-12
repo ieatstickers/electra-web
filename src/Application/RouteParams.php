@@ -48,19 +48,20 @@ class RouteParams
   {
     if ($params)
     {
+      $params = Arrays::getByKey(0, $params);
       $matches = [];
       preg_match_all('/{[A-z]+}/', $path, $matches);
 
       if ($matches)
       {
-        $matches = $matches[0];
+        $matches = Arrays::getByKey(0, $matches);
       }
 
       foreach ($matches as $key => $value)
       {
         $value = ltrim($value, '{');
         $value = rtrim($value, '}');
-        RouteParams::add($value, $params[$key]);
+        RouteParams::add($value, Arrays::getByKey($key, $params));
       }
     }
   }
