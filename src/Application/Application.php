@@ -215,12 +215,14 @@ class Application
   }
 
   /**
-   * @param $endpoint
+   * @param string | callable $endpoint
+   *
+   * @param bool $catchExceptions
    *
    * @return Response
    * @throws \Exception
    */
-  private function executeEndpoint($endpoint)
+  private function executeEndpoint($endpoint, $catchExceptions = true)
   {
     // Execute endpoint
     try {
@@ -236,9 +238,9 @@ class Application
     }
     catch (\Exception $exception)
     {
-      if ($this->on500)
+      if ($this->on500 && $catchExceptions)
       {
-        return $this->executeEndpoint($this->on500);
+        return $this->executeEndpoint($this->on500, false);
       }
 
       throw $exception;
