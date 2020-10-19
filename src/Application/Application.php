@@ -7,9 +7,8 @@ use Electra\Core\Context\ContextAware;
 use Electra\Core\Context\ContextInterface;
 use Electra\Core\Event\AbstractPayload;
 use Electra\Core\Event\EventInterface;
+use Electra\Core\Event\Type\TypeInterface;
 use Electra\Core\Exception\ElectraException;
-use Electra\Core\MessageBag\MessageBag;
-use Electra\Core\MessageBag\Message;
 use Electra\Utility\Arrays;
 use Electra\Utility\Objects;
 use Electra\Web\Context\WebContextInterface;
@@ -45,6 +44,9 @@ class Application
 
   /** @var callable[] */
   protected $responseMutators = [];
+
+  /** @var string | callable */
+  protected $on500;
 
   /**
    * Application constructor.
@@ -162,6 +164,38 @@ class Application
     return $this;
   }
 
+  /**
+   * @param string | callable $endpoint
+   *
+   * @return $this
+   */
+  public function on404($endpoint)
+  {
+    Router::fallback(function () use ($endpoint) {
+      return $this->executeEndpoint($endpoint);
+    });
+
+    return $this;
+  }
+
+  /**
+   * @param string | callable $endpoint
+   *
+   * @return $this
+   * @throws \Exception
+   */
+  public function on500($endpoint)
+  {
+    if (!is_string($endpoint) && !is_callable($endpoint))
+    {
+      throw new \Exception("Cannot register on500 - endpoint must be an event fqns or a callable: $path");
+    }
+
+    $this->on500 = $endpoint;
+
+    return $this;
+  }
+
   /** @throws \Exception */
   public function run()
   {
@@ -170,60 +204,49 @@ class Application
       Router::match([$endpointConfig['httpMethod']], $path, function(...$routeParams) use ($path, $endpointConfig)
       {
         $endpoint = $endpointConfig['endpoint'];
-        $endpointResponse = null;
-
         // Capture route params
         RouteParams::capture($path, $routeParams);
-
         // Execute endpoint
-        try {
-          // If endpoint is a string (fqns of an event)
-          if (is_string($endpoint))
-          {
-            $endpointResponse = $this->executeEvent($endpoint);
-          }
-          else
-          {
-            $endpointResponse = $this->executeCallable($endpoint);
-          }
-        }
-        catch (\Exception $exception)
-        {
-          if ($exception instanceof ElectraException && $exception->getDisplayMessage())
-          {
-            MessageBag::addMessage(Message::error($exception->getDisplayMessage()));
-          }
-          else
-          {
-            MessageBag::addMessage(Message::error($exception->getMessage()));
-          }
-        }
-
-        // Generate response by running any response mutators
-        $response = $this->generateResponse($endpointResponse);
-
-        if (is_string($response))
-        {
-          $responseContent = $response;
-        }
-        else if (method_exists($response, '__toString'))
-        {
-          $responseContent = $response->__toString();
-        }
-        else if ($response instanceof \JsonSerializable)
-        {
-          $responseContent = $response->jsonSerialize();
-        }
-        else
-        {
-          $responseContent = json_encode($response);
-        }
-
-        return Response::create($responseContent)->send();
+        return $this->executeEndpoint($endpoint);
       });
     }
 
     Router::init();
+  }
+
+  /**
+   * @param $endpoint
+   *
+   * @return Response
+   * @throws \Exception
+   */
+  private function executeEndpoint($endpoint)
+  {
+    // Execute endpoint
+    try {
+      // If endpoint is a string (fqns of an event)
+      if (is_string($endpoint))
+      {
+        $endpointResponse = $this->executeEvent($endpoint);
+      }
+      else
+      {
+        $endpointResponse = $this->executeCallable($endpoint);
+      }
+    }
+    catch (\Exception $exception)
+    {
+      if ($this->on500)
+      {
+        return $this->executeEndpoint($this->on500);
+      }
+
+      throw $exception;
+    }
+
+    // Generate response by running any response mutators
+    $responseContent = $this->generateResponse($endpointResponse);
+    return Response::create($responseContent)->send();
   }
 
   /**
@@ -269,27 +292,12 @@ class Application
 
     foreach ($params as $key => $paramValue)
     {
-      if (
-        is_numeric($paramValue)
-        && Arrays::getByKey($key, $expectedTypes) == 'integer'
-      )
-      {
-        $params[$key] = (int)$paramValue;
-      }
-      if (
-        is_numeric($paramValue)
-        && Arrays::getByKey($key, $expectedTypes) == 'double'
-      )
-      {
-        $params[$key] = (float)$paramValue;
-      }
+      /** @var TypeInterface $expectedType */
+      $expectedType = Arrays::getByKey($key, $expectedTypes);
 
-      if (
-        is_string($paramValue)
-        && Arrays::getByKey($key, $expectedTypes) == 'array'
-      )
+      if ($expectedType instanceof TypeInterface)
       {
-        $params[$key] = json_decode($paramValue, true);
+        $params[$key] = $expectedType->cast($params[$key]);
       }
     }
 
@@ -364,22 +372,7 @@ class Application
     $endpointResponse = null;
 
     // Execute event
-    try {
-      $endpointResponse = $event->execute($eventPayload);
-    }
-    catch (\Exception $exception)
-    {
-      if ($exception instanceof ElectraException && $exception->getDisplayMessage())
-      {
-        MessageBag::addMessage(Message::error($exception->getDisplayMessage()));
-      }
-      else
-      {
-        MessageBag::addMessage(Message::error($exception->getMessage()));
-      }
-    }
-
-    return $endpointResponse;
+    return $event->execute($eventPayload);
   }
 
   /**
@@ -394,7 +387,24 @@ class Application
       $response = $mutator($response);
     }
 
-    return $response;
+    if (is_string($response))
+    {
+      $responseContent = $response;
+    }
+    else if (method_exists($response, '__toString'))
+    {
+      $responseContent = $response->__toString();
+    }
+    else if ($response instanceof \JsonSerializable)
+    {
+      $responseContent = $response->jsonSerialize();
+    }
+    else
+    {
+      $responseContent = json_encode($response);
+    }
+
+    return $responseContent;
   }
 
   /**

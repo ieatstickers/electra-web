@@ -123,41 +123,6 @@ class Router
   }
 
   /**
-   * @param AbstractMiddleware $middleware
-   * @return void
-   * @throws \Exception
-   */
-  public static function registerMiddleware(AbstractMiddleware $middleware)
-  {
-    $validHttpMethods = self::getValidHttpMethods();
-    $middlewareHttpMethods = $middleware->getHttpMethods();
-
-    foreach ($middlewareHttpMethods as $httpMethod)
-    {
-      if (!in_array($httpMethod, $validHttpMethods))
-      {
-        $availableOptions = implode(', ', $validHttpMethods);
-
-        throw new \Exception("Cannot register route. Invalid http method supplied: $httpMethod. Available options: $availableOptions");
-      }
-    }
-
-    self::getBramusRouter()->before(
-      strtoupper(implode('|', $middlewareHttpMethods)),
-      $middleware->getRoutePattern(),
-      function() use ($middleware)
-      {
-        $result = $middleware->run();
-
-        if (!$result)
-        {
-          exit;
-        }
-      }
-    );
-  }
-
-  /**
    * @return void
    */
   public static function init()
