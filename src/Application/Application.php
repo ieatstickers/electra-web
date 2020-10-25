@@ -216,31 +216,30 @@ class Application
 
   /**
    * @param string | callable $endpoint
-   *
-   * @param bool $catchExceptions
+   * @param \Exception        $on500Exception
    *
    * @return Response
    * @throws \Exception
    */
-  private function executeEndpoint($endpoint, $catchExceptions = true)
+  private function executeEndpoint($endpoint, $on500Exception = null)
   {
     // Execute endpoint
     try {
       // If endpoint is a string (fqns of an event)
       if (is_string($endpoint))
       {
-        $endpointResponse = $this->executeEvent($endpoint);
+        $endpointResponse = $this->executeEvent($endpoint, $on500Exception);
       }
       else
       {
-        $endpointResponse = $this->executeCallable($endpoint);
+        $endpointResponse = $this->executeCallable($endpoint, $on500Exception);
       }
     }
     catch (\Exception $exception)
     {
-      if ($this->on500 && $catchExceptions)
+      if ($this->on500 && !$on500Exception)
       {
-        return $this->executeEndpoint($this->on500, false);
+        return $this->executeEndpoint($this->on500, $exception);
       }
 
       throw $exception;
@@ -310,12 +309,13 @@ class Application
   }
 
   /**
-   * @param callable $callable
+   * @param callable        $callable
+   * @param \Exception|null $on500Exception
    *
    * @return mixed
    * @throws ElectraException
    */
-  private function executeCallable(callable $callable)
+  private function executeCallable(callable $callable, \Exception $on500Exception = null)
   {
     // Run all middleware (will throw an exception if request is rejected)
     $this->runMiddleware($callable);
@@ -324,16 +324,23 @@ class Application
     $payload = Payload::create();
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
     $payload = Objects::copyAllProperties((object)$this->castParams($requestParams, $payload->getPropertyTypes()), $payload);
+
+    if ($on500Exception)
+    {
+      $payload->exception = $on500Exception;
+    }
+
     return $callable($payload);
   }
 
   /**
-   * @param string $endpoint
+   * @param string          $endpoint
+   * @param \Exception|null $on500Exception
    *
    * @return mixed
    * @throws ElectraException
    */
-  private function executeEvent(string $endpoint)
+  private function executeEvent(string $endpoint, \Exception $on500Exception = null)
   {
     // Instantiate class
     /** @var EventInterface $event */
@@ -375,6 +382,11 @@ class Application
     }
 
     $endpointResponse = null;
+
+    if ($on500Exception)
+    {
+      $eventPayload->exception = $on500Exception;
+    }
 
     // Execute event
     return $event->execute($eventPayload);
