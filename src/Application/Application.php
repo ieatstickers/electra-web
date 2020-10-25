@@ -12,7 +12,7 @@ use Electra\Core\Exception\ElectraException;
 use Electra\Utility\Arrays;
 use Electra\Utility\Objects;
 use Electra\Web\Context\WebContextInterface;
-use Electra\Web\Http\DefaultPayload;
+use Electra\Web\Http\Payload;
 use Electra\Web\Http\Response;
 use Electra\Web\Middleware\MiddlewareInterface;
 
@@ -188,7 +188,7 @@ class Application
   {
     if (!is_string($endpoint) && !is_callable($endpoint))
     {
-      throw new \Exception("Cannot register on500 - endpoint must be an event fqns or a callable: $path");
+      throw new \Exception("Cannot register on500 - endpoint must be an event fqns or a callable");
     }
 
     $this->on500 = $endpoint;
@@ -318,7 +318,7 @@ class Application
     $this->runMiddleware($callable);
 
     // Hydrate payload from request params
-    $payload = DefaultPayload::create();
+    $payload = Payload::create();
     $requestParams = array_merge(RouteParams::getAll(), $this->getContext()->request()->all());
     $payload = Objects::copyAllProperties((object)$this->castParams($requestParams, $payload->getPropertyTypes()), $payload);
     return $callable($payload);
@@ -364,7 +364,7 @@ class Application
     }
     else
     {
-      $eventPayload = DefaultPayload::create();
+      $eventPayload = Payload::create();
       $eventPayload = Objects::copyAllProperties(
         (object)$this->castParams($requestParams, $eventPayload->getPropertyTypes()),
         $eventPayload
