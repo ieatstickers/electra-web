@@ -298,6 +298,8 @@ class Application
       /** @var TypeInterface $expectedType */
       $expectedType = Arrays::getByKey($key, $expectedTypes);
 
+      if ($params[$key] === 'null') $params[$key] = null;
+
       if ($expectedType instanceof TypeInterface)
       {
         $params[$key] = $expectedType->cast($params[$key]);
