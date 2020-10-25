@@ -199,13 +199,13 @@ class Application
   /** @throws \Exception */
   public function run()
   {
-    foreach ($this->endpoints as $path => $endpointConfig)
+    foreach ($this->endpoints as $methodPath => $endpointConfig)
     {
-      Router::match([$endpointConfig['httpMethod']], $path, function(...$routeParams) use ($path, $endpointConfig)
+      Router::match([$endpointConfig['httpMethod']], $endpointConfig['path'], function(...$routeParams) use ($methodPath, $endpointConfig)
       {
         $endpoint = $endpointConfig['endpoint'];
         // Capture route params
-        RouteParams::capture($path, $routeParams);
+        RouteParams::capture($endpointConfig['path'], $routeParams);
         // Execute endpoint
         return $this->executeEndpoint($endpoint);
       });
@@ -261,18 +261,19 @@ class Application
    */
   private function addEndpoint(string $httpMethod, string $path, $endpoint)
   {
-    if (isset($this->endpoints[$path]))
+    if (isset($this->endpoints["{$httpMethod}::{$path}"]))
     {
-      throw new \Exception("Cannot register route - duplicate path: $path");
+      throw new \Exception("Cannot register route - duplicate path: {$httpMethod}::{$path}");
     }
 
     if (!is_string($endpoint) && !is_callable($endpoint))
     {
-      throw new \Exception("Cannot register route - endpoint must be an event fqns or a callable: $path");
+      throw new \Exception("Cannot register route - endpoint must be an event fqns or a callable: {$httpMethod}::{$path}");
     }
 
-    $this->endpoints[$path] = [
+    $this->endpoints["{$httpMethod}::{$path}"] = [
       'httpMethod' => $httpMethod,
+      'path' => $path,
       'endpoint' => $endpoint
     ];
 
