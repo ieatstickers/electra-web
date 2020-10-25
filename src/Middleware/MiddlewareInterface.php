@@ -8,9 +8,9 @@ use Electra\Core\Event\EventInterface;
 interface MiddlewareInterface extends ContextAwareInterface
 {
   /**
-   * @param EventInterface $event
+   * @param EventInterface | callable $event
    *
    * @return bool
    */
-  public function run(EventInterface $event): bool;
+  public function run($event): bool;
 }
