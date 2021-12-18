@@ -247,7 +247,12 @@ class Application
 
     // Generate response by running any response mutators
     $responseContent = $this->generateResponse($endpointResponse);
-    return Response::create($responseContent)->send();
+
+    return $this
+      ->getContext()
+      ->response()
+      ->setContent($responseContent)
+      ->send();
   }
 
   /**
