@@ -245,6 +245,12 @@ class Application
       throw $exception;
     }
 
+    // If endpoint response is an Electra http response, return it
+    if ($endpointResponse instanceof Response)
+    {
+      return $endpointResponse->send();
+    }
+
     // Generate response by running any response mutators
     $responseContent = $this->generateResponse($endpointResponse);
 
