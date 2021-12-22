@@ -14,6 +14,7 @@
 		"bramus/router": "^1.4",
 		"electra/core": "dev-php8.1-upgrade",
 		"electra/utility": "dev-php8.1-upgrade",
+    "illuminate/http": "^8.77.0",
 		"ext-json": "*"
 	},
 	"require-dev" : {
