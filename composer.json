@@ -12,9 +12,8 @@
 	],
 	"require": {
 		"bramus/router": "^1.4",
-		"electra/core": "dev-master",
-		"electra/utility": "dev-master",
-		"illuminate/http": "^5.8",
+		"electra/core": "dev-php8.1-upgrade",
+		"electra/utility": "dev-php8.1-upgrade",
 		"ext-json": "*"
 	},
 	"require-dev" : {
