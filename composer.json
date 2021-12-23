@@ -1,32 +1,32 @@
 {
-	"name": "electra/web",
-	"repositories": [
-		{
-			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/electra-utility.git"
-		},
-		{
-			"type": "vcs",
-			"url":  "https://github.com/ieatstickers/electra-core.git"
-		}
-	],
-	"require": {
-		"bramus/router": "^1.4",
-		"electra/core": "dev-php8.1-upgrade",
-		"electra/utility": "dev-php8.1-upgrade",
+  "name": "electra/web",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/ieatstickers/electra-utility.git"
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/ieatstickers/electra-core.git"
+    }
+  ],
+  "require": {
+    "bramus/router": "^1.4",
+    "electra/core": "dev-php8.1-upgrade",
+    "electra/utility": "dev-php8.1-upgrade",
     "illuminate/http": "^8.77.0",
-		"ext-json": "*"
-	},
-	"require-dev" : {
-	},
-	"authors": [
-		{
-			"name": "Mike Burke"
-		}
-	],
-	"autoload": {
-		"psr-4": {
-			"Electra\\Web\\": "src"
-		}
-	}
+    "ext-json": "*"
+  },
+  "require-dev": {
+  },
+  "authors": [
+    {
+      "name": "Mike Burke"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Electra\\Web\\": "src"
+    }
+  }
 }
