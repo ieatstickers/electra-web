@@ -424,7 +424,7 @@ class Application
     {
       $responseContent = $response;
     }
-    else if (method_exists($response, '__toString'))
+    else if (is_object($response) && method_exists($response, '__toString'))
     {
       $responseContent = $response->__toString();
     }
