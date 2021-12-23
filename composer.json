@@ -1,5 +1,6 @@
 {
   "name": "electra/web",
+  "prefer-stable": true,
   "repositories": [
     {
       "type": "vcs",
