@@ -24,16 +24,7 @@ class RouteParams
         ->addMetaData('routeParameterKey', $key);
     }
 
-    $intValue = (int)$value;
-
-    if ($intValue == 0 && $value !== "0")
-    {
-      self::$routeParams[$key] = $value;
-    }
-    else
-    {
-      self::$routeParams[$key] = $intValue;
-    }
+    self::$routeParams[$key] = is_numeric($value) ? (int)$value : $value;
 
     return self::$routeParams;
   }
