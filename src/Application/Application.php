@@ -13,6 +13,7 @@ use Electra\Utility\Arrays;
 use Electra\Utility\Objects;
 use Electra\Web\Context\WebContextInterface;
 use Electra\Web\Http\Payload;
+use Electra\Web\Http\RedirectResponse;
 use Electra\Web\Http\Response;
 use Electra\Web\Middleware\MiddlewareInterface;
 
@@ -246,7 +247,7 @@ class Application
     }
 
     // If endpoint response is an Electra http response, return it
-    if ($endpointResponse instanceof Response)
+    if ($endpointResponse instanceof Response || $endpointResponse instanceof  RedirectResponse)
     {
       return $endpointResponse->send();
     }
